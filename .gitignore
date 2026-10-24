@@ -1,0 +1,19 @@
+# Python
+**/__pycache__/
+*.pyc
+**/.venv/
+**/.pytest_cache/
+
+# Node / frontend
+**/node_modules/
+**/dist/
+
+# AWS SAM
+**/.aws-sam/
+
+# Env & secrets (nunca versionar)
+**/.env
+*.local
+
+# Artefactos de revisión (proceso, no producto)
+semantic-review/

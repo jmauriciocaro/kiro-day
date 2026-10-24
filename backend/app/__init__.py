@@ -1,0 +1,1 @@
+"""POS backend application package."""

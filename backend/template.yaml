@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  POS MVP backend — FastAPI on Lambda (via Mangum) behind an HTTP API, with a
+  single DynamoDB table. The JWT signing secret is read from SSM Parameter Store
+  by name; it is never stored in this template or the repository.
+
+Parameters:
+  JwtSecretParam:
+    Type: String
+    Default: /pos/jwt-secret
+    Description: Name of the SSM SecureString parameter holding the JWT secret.
+  JwtSecretParamShort:
+    Type: String
+    Default: pos/jwt-secret
+    Description: >
+      Same SSM parameter name without the leading slash, required by
+      SSMParameterReadPolicy (it prepends 'parameter/').
+  JwtTtlSeconds:
+    Type: Number
+    Default: 3600
+    Description: JWT time-to-live in seconds.
+  CorsAllowOrigin:
+    Type: String
+    Default: "*"
+    Description: >
+      Allowed CORS origin for the HTTP API. Defaults to "*" for first setup;
+      set it to the Amplify Hosting domain (e.g. https://main.xxxx.amplifyapp.com)
+      in production.
+
+Globals:
+  Function:
+    Timeout: 15
+    MemorySize: 256
+    Runtime: python3.12
+
+Resources:
+  PosTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: pos
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+
+  PosApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref CorsAllowOrigin
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+        AllowMethods:
+          - GET
+          - POST
+          - PATCH
+          - OPTIONS
+
+  PosFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.main.handler
+      CodeUri: .
+      Description: FastAPI POS API served through Mangum.
+      Environment:
+        Variables:
+          POS_TABLE_NAME: !Ref PosTable
+          POS_JWT_SECRET_PARAM: !Ref JwtSecretParam
+          POS_JWT_TTL_SECONDS: !Ref JwtTtlSeconds
+      Policies:
+        - Statement:
+            - Sid: PosTableLeastPrivilege
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:TransactWriteItems
+              Resource: !GetAtt PosTable.Arn
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref JwtSecretParamShort
+      Events:
+        ApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PosApi
+            Path: /
+            Method: ANY
+        ApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PosApi
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the POS HTTP API (use as VITE_API_URL in the frontend).
+    Value: !Sub "https://${PosApi}.execute-api.${AWS::Region}.amazonaws.com"
+  TableName:
+    Description: DynamoDB single table name.
+    Value: !Ref PosTable

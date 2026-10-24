@@ -1,0 +1,22 @@
+version: 1
+# Amplify Hosting build settings for the POS frontend (React + Vite).
+# El backend NO se despliega aquí: se publica aparte con AWS SAM
+# (ver backend/template.yaml). Amplify solo sirve el frontend estático.
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend
+        - npm ci
+    build:
+      commands:
+        # VITE_API_URL debe estar configurada como variable de entorno en la
+        # consola de Amplify (apunta al endpoint del HTTP API del backend SAM).
+        - npm run build
+  artifacts:
+    baseDirectory: frontend/dist
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - frontend/node_modules/**/*
