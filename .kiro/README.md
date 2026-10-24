@@ -1,6 +1,6 @@
 # .kiro/ — la oficina de nuestro equipo de agentes
 
-Esta carpeta configura cómo Kiro trabaja en este proyecto (POS).
+Esta carpeta configura cómo Kiro trabaja en este proyecto (reporth).
 
 | Carpeta      | Rol en el equipo                          | Feature de Kiro |
 |--------------|-------------------------------------------|-----------------|

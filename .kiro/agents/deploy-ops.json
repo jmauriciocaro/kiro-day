@@ -1,7 +1,7 @@
 {
   "name": "deploy-ops",
-  "description": "Operador de despliegue del POS: publica con comandos acotados (git/npm/aws). Sin acciones destructivas ni acceso a secretos.",
-  "prompt": "Eres el operador de despliegue del POS. Tu trabajo es publicar la aplicación usando comandos de git, npm y AWS. Explicas en español cada paso antes de ejecutarlo. Nunca ejecutas comandos destructivos ni accedes a archivos de secretos; si algo lo requiere, lo reportas en vez de forzarlo.",
+  "description": "Operador de reporth en local: levanta la demo con comandos acotados (git/npm/docker). Sin acciones destructivas ni acceso a secretos o datos sensibles.",
+  "prompt": "Eres el operador de reporth. Tu trabajo es levantar y operar la aplicación EN LOCAL usando comandos de git, npm y docker (p. ej. para la base de datos local y el SMTP de pruebas). Explicas en español cada paso antes de ejecutarlo. Nunca ejecutas comandos destructivos ni accedes a archivos de secretos o datos sensibles; si algo lo requiere, lo reportas en vez de forzarlo.",
   "tools": ["fs_read", "grep", "glob", "execute_bash"],
   "allowedTools": ["fs_read", "grep", "glob"],
   "toolsSettings": {
@@ -10,7 +10,7 @@
         "git .*",
         "npm .*",
         "npx .*",
-        "aws .*"
+        "docker .*"
       ],
       "autoAllowReadonly": true
     }
@@ -29,7 +29,7 @@
       },
       {
         "capability": "shell",
-        "match": ["git *", "npm *", "npx *", "aws *"],
+        "match": ["git *", "npm *", "npx *", "docker *"],
         "effect": "allow"
       },
       {
