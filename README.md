@@ -13,12 +13,18 @@ Este es tu workspace **kiro-day**: un VS Code completo en el navegador con
 
 ## 🎬 El caso de uso que seguiremos
 
-Tenemos una **idea de negocio**: un sistema **POS** (punto de venta) para una
-tienda. Pero **no sabemos de desarrollo ni de cloud**.
+Tenemos una **idea de negocio**: **reporth**, una central de reporte de deudas
+**B2B** entre prestadores de servicios. En Colombia hay muchas empresas que
+cobran por suscripción (jardines infantiles privados, academias, gimnasios) que
+no son lo bastante grandes para pagar una central de riesgo. Cuando un cliente
+no paga, simplemente cambia de proveedor, y como los proveedores no se comunican
+entre sí, el siguiente le presta el servicio sin enterarse. **reporth** llena ese
+vacío: permite reportar deudas y consultarlas antes de aceptar a un cliente.
+Pero **no sabemos de desarrollo**.
 
 En vez de rendirnos (o contratar un equipo caro), vamos a usar **Kiro** para
 armar nuestro propio **equipo de especialistas** — agentes que nos acompañan
-desde la idea hasta el despliegue.
+desde la idea hasta la demo funcionando (todo **local**, sin despliegues).
 
 A lo largo del taller, cada paso "contrata" o configura una pieza del equipo, y
 al hacerlo vamos descubriendo **todas las features de Kiro**:
@@ -36,7 +42,7 @@ al hacerlo vamos descubriendo **todas las features de Kiro**:
 | **Powers** | Empaquetar y compartir el equipo (o instalar el de otros) | 9 |
 | **Specs** | De la idea a un plan: requisitos → diseño → tareas | 10 · 🔴 en vivo |
 
-> El POS es la excusa narrativa. El objetivo real es que al final tengas creado
+> reporth es la excusa narrativa. El objetivo real es que al final tengas creado
 > y entendido **todo el arsenal de configuración de Kiro**.
 
 ---
@@ -139,7 +145,7 @@ lee como contexto **persistente** del proyecto, y sus **4 modos de inclusión**.
 
 ```
 .kiro/steering/
-├── producto.md    # inclusion: always     → la visión del POS (toda sesión)
+├── producto.md    # inclusion: always     → la visión de reporth (toda sesión)
 ├── tech.md        # inclusion: always     → el stack tecnológico
 └── frontend.md    # inclusion: fileMatch  → reglas solo al editar *.tsx/*.jsx
 ```
@@ -155,8 +161,9 @@ lee como contexto **persistente** del proyecto, y sus **4 modos de inclusión**.
 
 > La meta es mantener el **contexto ligero**: no cargar todo siempre.
 
-**Pruébalo:** abre `kiro-cli --v3 chat` y pregunta *"¿Qué stack usamos y en qué idioma
-respondes?"*. Debería responder en español y citar React/FastAPI/DynamoDB **sin
+**Pruébalo:** abre `kiro-cli --v3 chat` y pregunta *"¿Qué construimos, con qué
+stack y en qué idioma respondes?"*. Debería responder en español, describir
+reporth (central de deudas B2B) y citar React/FastAPI con stack **local** **sin
 que se lo digas** — lo leyó del steering `always`.
 
 ## Acto 2 — Contratamos al primer especialista (Agents)
@@ -168,7 +175,7 @@ que se lo digas** — lo leyó del steering `always`.
 **Qué enseña:** **Custom Agents** — configuraciones JSON en `.kiro/agents/` que
 convierten a Kiro en un especialista con un rol fijo.
 
-**Qué crea:** `.kiro/agents/arquitecto.json` — un arquitecto de soluciones AWS
+**Qué crea:** `.kiro/agents/arquitecto.json` — un arquitecto de soluciones
 de **solo lectura** (propone y explica, no escribe código).
 
 **Campos de un agente:**
@@ -197,12 +204,12 @@ de **solo lectura** (propone y explica, no escribe código).
 ```bash
 kiro-cli --v3 chat --agent arquitecto
 # luego, dentro del chat:
-#   Propón la arquitectura del POS y explícamela como si no supiera de cloud.
+#   Propón la arquitectura de reporth y explícamela como si no supiera de tecnología.
 ```
 
 Comandos útiles dentro del chat: `/agent list` (ver agentes), `/agent swap
 arquitecto` (cambiar en caliente). El arquitecto ya conoce el producto y el
-stack porque los precargamos en `resources`.
+stack porque los lee del steering `always`.
 
 ## Acto 3 — El equipo crece (más Agents)
 
@@ -278,8 +285,9 @@ trabajo con `NEEDS_CHANGES` hasta N iteraciones). Kiro además trae sub-agentes
 internos (context gathering y general purpose) que usa solo.
 
 **Pruébalo:** `kiro-cli --v3 chat --agent tech-lead`, y pídele *"Diseña y arma el
-MVP del POS: arquitecto propone, backend-dev y frontend-dev implementan en
-paralelo, y reviewer audita."* En CLI, vigila sub-agentes largos con `Ctrl+G`.
+MVP de reporth: arquitecto propone, backend-dev y frontend-dev implementan en
+paralelo (reportar deuda + consultar), y reviewer audita."* En CLI, vigila
+sub-agentes largos con `Ctrl+G`.
 
 ## Acto 5 — Conocimiento experto bajo demanda (Skills)
 
@@ -295,18 +303,18 @@ con `/`). Costo de contexto mínimo: al arrancar solo lee `name` + `description`
 
 ```
 .kiro/skills/
-├── dynamodb-pos/
-│   └── SKILL.md    # modelar productos/ventas/inventario en DynamoDB
-└── deploy-amplify/
-    └── SKILL.md    # publicar el POS con AWS Amplify (hosting + backend)
+├── datos-reporth/
+│   └── SKILL.md    # modelar deudas/personas con aislamiento por organización
+└── cobro-correo/
+    └── SKILL.md    # cobro automático por correo con un SMTP local emulado
 ```
 
 **Formato (frontmatter YAML):**
 
 ```markdown
 ---
-name: dynamodb-pos
-description: Modela los datos del POS en DynamoDB... Úsala al diseñar el esquema.
+name: datos-reporth
+description: Modela los datos de reporth con aislamiento por organización... Úsala al diseñar el esquema.
 ---
 # contenido del manual…
 ```
@@ -318,12 +326,13 @@ description: Modela los datos del POS en DynamoDB... Úsala al diseñar el esque
 | **Steering** | Siempre o por archivo (`always`/`fileMatch`) | Reglas del proyecto |
 | **Skill** | Solo cuando la conversación lo pide | Experticia puntual |
 
-> Las descripciones **específicas** activan mejor: *"Design DynamoDB single-table
-> schemas"* funciona mejor que *"Help with databases"*.
+> Las descripciones **específicas** activan mejor: *"Modela deudas con
+> aislamiento por organización"* funciona mejor que *"Ayuda con bases de datos"*.
 
-**Pruébalo:** en `kiro-cli --v3 chat`, pide *"Diseña el esquema de datos del POS"*
-(activa `dynamodb-pos`) o *"Quiero publicar el POS en internet"* (activa
-`deploy-amplify`). También puedes escribir `/` y elegir la skill por su nombre.
+**Pruébalo:** en `kiro-cli --v3 chat`, pide *"Diseña el modelo de datos de
+reporth"* (activa `datos-reporth`) o *"Cómo envío el cobro por correo a los
+adeudados"* (activa `cobro-correo`). También puedes escribir `/` y elegir la
+skill por su nombre.
 
 ## Acto 6 — Automatización del equipo (Hooks)
 
@@ -390,8 +399,8 @@ externos que exponen herramientas. Config en `.kiro/settings/mcp.json` (el que
 creamos vacío en el Acto 0).
 
 **Qué hace:** conecta el **MCP de draw.io** para que el equipo pueda **dibujar
-diagramas** (arquitectura, flujo de venta, modelo de datos) en vez de solo
-describirlos.
+diagramas** (arquitectura, flujo de reportar/consultar una deuda, modelo de
+datos) en vez de solo describirlos.
 
 ```json
 {
@@ -417,9 +426,9 @@ draw.io es **remoto**: basta la URL, ideal para el sandbox. Aporta
 `get_drawio_reference`.
 
 **Pruébalo:** entra a `kiro-cli --v3 chat`, verifica con `/mcp list`, y pide al
-`arquitecto`: *"Dibuja la arquitectura del POS: React → API Gateway → Lambda
-(FastAPI) → DynamoDB, en Mermaid."* En una terminal, draw.io devuelve un enlace
-que abre el diagrama.
+`arquitecto`: *"Dibuja la arquitectura de reporth: React → API (FastAPI) → base
+de datos local, todo en local, en Mermaid."* En una terminal, draw.io devuelve
+un enlace que abre el diagrama.
 
 > `autoApprove` solo para herramientas seguras: `create_diagram` solo genera
 > diagramas, no toca tu sistema.
@@ -435,8 +444,8 @@ capacidad** de lo que el agente puede hacer. Y cómo aplicarlo **a nivel de
 agente** (versionable, viaja con el repo), que es la forma práctica de
 entregarlo con el proyecto.
 
-**Qué crea:** `deploy-ops.json` — un agente "operador de despliegue" que **solo
-puede desplegar** (git/npm/aws), con lo destructivo y los secretos **bloqueados**
+**Qué crea:** `deploy-ops.json` — un agente "operador" que **solo puede operar
+en local** (git/npm/docker), con lo destructivo y los secretos **bloqueados**
 por sus propios permisos. Más un `permissions.yaml` de ejemplo en
 `.kiro/security/` (referencia del scope global).
 
@@ -444,13 +453,13 @@ por sus propios permisos. Más un `permissions.yaml` de ejemplo en
 
 ```json
 "toolsSettings": {
-  "shell": { "allowedCommands": ["git .*", "npm .*", "aws .*"], "autoAllowReadonly": true }
+  "shell": { "allowedCommands": ["git .*", "npm .*", "docker .*"], "autoAllowReadonly": true }
 },
 "permissions": {
   "rules": [
     { "capability": "fs_read", "match": ["**/.env", "**/*.pem", "secrets/**"], "effect": "deny" },
     { "capability": "shell",   "match": ["rm -rf *", "sudo *"], "effect": "deny" },
-    { "capability": "shell",   "match": ["git *", "npm *", "aws *"], "effect": "allow" },
+    { "capability": "shell",   "match": ["git *", "npm *", "docker *"], "effect": "allow" },
     { "capability": "fs_read", "effect": "allow" }
   ],
   "policies": ["read-only-shell"]
@@ -469,7 +478,7 @@ por sus propios permisos. Más un `permissions.yaml` de ejemplo en
 | `allow` | Procede en silencio |
 
 > **`deny > ask > allow`**: un `deny` gana en **cualquier** scope. Por eso, aunque
-> `deploy-ops` tenga `allow` de `aws *`, un `rm -rf` sigue **bloqueado**.
+> `deploy-ops` tenga `allow` de `docker *`, un `rm -rf` sigue **bloqueado**.
 
 **`policies`:** presets de permisos reutilizables con nombre —
 `read-only-shell`, `read-workspace`, `edit-workspace`, `dev-shell`, `allow-all`.
@@ -489,9 +498,10 @@ Se combinan para armar el perfil de la sesión sin escribir cada regla.
 > auto-confiarse. **Invariantes** hardcoded: el agente nunca escribe sus propios
 > settings (no se auto-eleva) y siempre pregunta antes de tocar `.git/**`.
 
-**Pruébalo:** `kiro-cli --v3 chat --agent deploy-ops`, pídele desplegar (corre
-git/npm/aws) y luego pídele `rm -rf /` — lo tiene denegado por sus permisos. En
-vivo: `/tools` y `/tools trust-all`. En headless/CI, cada `ask` equivale a `deny`.
+**Pruébalo:** `kiro-cli --v3 chat --agent deploy-ops`, pídele levantar la demo
+en local (corre git/npm/docker) y luego pídele `rm -rf /` — lo tiene denegado por
+sus permisos. En vivo: `/tools` y `/tools trust-all`. En headless/CI, cada `ask`
+equivale a `deny`.
 
 ## Acto 9 — Empaquetar y compartir el equipo (Powers)
 
@@ -503,10 +513,10 @@ vivo: `/tools` y `/tools trust-all`. En headless/CI, cada `ask` equivale a `deny
 documentación/steering + workflows + (opcional) servers MCP en una unidad que
 Kiro activa **por keywords**. Son la unidad de **distribución** de capacidades.
 
-**Qué crea:** un power propio, `pos-kit`, en `.kiro/powers/`.
+**Qué crea:** un power propio, `reporth-kit`, en `.kiro/powers/`.
 
 ```
-.kiro/powers/pos-kit/
+.kiro/powers/reporth-kit/
 ├── POWER.md     # frontmatter + onboarding + steering + workflows
 └── mcp.json     # los MCP que trae el power (aquí, draw.io)
 ```
@@ -515,10 +525,10 @@ Kiro activa **por keywords**. Son la unidad de **distribución** de capacidades.
 
 ```markdown
 ---
-name: "pos-kit"
-displayName: "POS Starter Kit"
-description: "Equipo y buenas prácticas para construir un POS en AWS serverless"
-keywords: ["pos", "ventas", "inventario", "dynamodb"]
+name: "reporth-kit"
+displayName: "reporth Starter Kit"
+description: "Equipo y buenas prácticas para construir reporth, una central de reporte de deudas B2B"
+keywords: ["reporth", "deudas", "morosos", "reporte", "b2b", "cobro"]
 ---
 # Onboarding …
 # Steering Instructions …
@@ -543,7 +553,7 @@ keywords: ["pos", "ventas", "inventario", "dynamodb"]
 ```bash
 /powers list                        # powers instalados
 /powers install <nombre>            # del catálogo oficial (Stripe, Figma, AWS…)
-/powers install .kiro/powers/pos-kit   # uno local, como el nuestro
+/powers install .kiro/powers/reporth-kit   # uno local, como el nuestro
 /powers uninstall <nombre>
 ```
 
@@ -556,18 +566,22 @@ keywords: ["pos", "ventas", "inventario", "dynamodb"]
 **Cómo se hará en vivo** (guion para el facilitador):
 
 1. Entrar con el equipo ya montado: `kiro-cli --v3 chat --agent arquitecto`.
-2. Pedir un spec del MVP del POS, p. ej.:
-   *"Crea un spec para el MVP del POS: registrar una venta y descontar stock."*
+2. Pedir un spec del MVP de reporth, p. ej.:
+   *"Crea un spec para el MVP de reporth: reportar una deuda de un estudiante
+   asociada a su padre/acudiente, y consultar a una persona para aceptar o
+   denegar."*
 3. Recorrer las fases que Kiro propone, aprobando/ajustando en cada una:
    - `requirements.md` → qué debe hacer (historias/criterios).
-   - `design.md` → cómo (arquitectura, modelo de datos, usa el MCP de draw.io).
+   - `design.md` → cómo (arquitectura local, modelo de datos con aislamiento por
+     organización, usa el MCP de draw.io).
    - `tasks.md` → en qué pasos, para implementar incrementalmente.
 4. Mostrar que los specs quedan en `.kiro/specs/<feature>/` y que `backend-dev`
    / `frontend-dev` pueden ejecutar las tareas una a una.
 
 **La idea de cierre:** todo lo construido en los Actos 0–8 (reglas, equipo,
 conocimiento, automatización, herramientas, seguridad y empaquetado) converge
-aquí — el equipo de agentes convierte la **idea del POS** en un **plan ejecutable**.
+aquí — el equipo de agentes convierte la **idea de reporth** en un **plan
+ejecutable**.
 
 ---
 

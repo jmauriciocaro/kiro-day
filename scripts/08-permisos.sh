@@ -3,9 +3,11 @@
 # ACTO 8 — "Seguridad: ¿qué puede y qué NO puede hacer el equipo?" (Permisos)
 # =============================================================================
 # Historia: nuestro equipo ya escribe archivos y ejecuta comandos. Eso es
-# poderoso… y peligroso. Para el POS queremos un "operador de despliegue" que
-# SOLO pueda hacer su trabajo (publicar) y NADA destructivo. En vez de confiar en
-# que se porte bien, lo ENCUADRAMOS con permisos declarativos EN EL AGENTE.
+# poderoso… y peligroso, más aún en reporth, que maneja datos sensibles. Queremos
+# un "operador" que SOLO pueda hacer su trabajo (git/npm para levantar la demo
+# local) y NADA destructivo, ni leer secretos ni datos sensibles. En vez de
+# confiar en que se porte bien, lo ENCUADRAMOS con permisos declarativos EN EL
+# AGENTE.
 #
 # Feature de Kiro: PERMISSIONS (capability-based). Dos lugares para definirlos:
 #   1) A NIVEL DE AGENTE (campo "permissions" + "toolsSettings" en el .json del
@@ -19,10 +21,11 @@ source "$(dirname "$0")/lib/common.sh"
 title "ACTO 8 — Seguridad: un agente con permisos quirúrgicos"
 
 story "Dónde vamos" \
-  "Para publicar el POS creamos un 'operador de despliegue': deploy-ops." \
-  "Queremos que pueda LEER el proyecto y correr SOLO comandos de deploy" \
-  "(git, npm, aws), y que tenga PROHIBIDO lo destructivo (rm -rf, sudo) y" \
-  "tocar secretos. No se lo pedimos 'por favor': lo imponemos con permisos."
+  "Para operar reporth en local creamos un 'operador': deploy-ops." \
+  "Queremos que pueda LEER el proyecto y correr SOLO comandos acotados" \
+  "(git, npm, docker para los servicios locales), y que tenga PROHIBIDO lo" \
+  "destructivo (rm -rf, sudo) y leer secretos/datos sensibles." \
+  "No se lo pedimos 'por favor': lo imponemos con permisos."
 
 explain "Capability-based permissions (no es un interruptor on/off)" \
   "En vez de 'confío / no confío' en todo, defines reglas POR CAPACIDAD:" \
@@ -63,8 +66,8 @@ step "Creando ${DOPS}…"
 cat > "$DOPS" <<'JSON'
 {
   "name": "deploy-ops",
-  "description": "Operador de despliegue del POS: publica con comandos acotados (git/npm/aws). Sin acciones destructivas ni acceso a secretos.",
-  "prompt": "Eres el operador de despliegue del POS. Tu trabajo es publicar la aplicación usando comandos de git, npm y AWS. Explicas en español cada paso antes de ejecutarlo. Nunca ejecutas comandos destructivos ni accedes a archivos de secretos; si algo lo requiere, lo reportas en vez de forzarlo.",
+  "description": "Operador de reporth en local: levanta la demo con comandos acotados (git/npm/docker). Sin acciones destructivas ni acceso a secretos o datos sensibles.",
+  "prompt": "Eres el operador de reporth. Tu trabajo es levantar y operar la aplicación EN LOCAL usando comandos de git, npm y docker (p. ej. para la base de datos local y el SMTP de pruebas). Explicas en español cada paso antes de ejecutarlo. Nunca ejecutas comandos destructivos ni accedes a archivos de secretos o datos sensibles; si algo lo requiere, lo reportas en vez de forzarlo.",
   "tools": ["fs_read", "grep", "glob", "execute_bash"],
   "allowedTools": ["fs_read", "grep", "glob"],
   "toolsSettings": {
@@ -73,7 +76,7 @@ cat > "$DOPS" <<'JSON'
         "git .*",
         "npm .*",
         "npx .*",
-        "aws .*"
+        "docker .*"
       ],
       "autoAllowReadonly": true
     }
@@ -92,7 +95,7 @@ cat > "$DOPS" <<'JSON'
       },
       {
         "capability": "shell",
-        "match": ["git *", "npm *", "npx *", "aws *"],
+        "match": ["git *", "npm *", "npx *", "docker *"],
         "effect": "allow"
       },
       {
@@ -117,10 +120,10 @@ pause
 explain "Leamos las reglas de deploy-ops como una política de seguridad" \
   "  deny  fs_read sobre .env/.pem/.key/secrets  → NO puede leer secretos." \
   "  deny  shell rm -rf/sudo/mkfs/dd             → NO puede destruir nada." \
-  "  allow shell git/npm/npx/aws                  → SÍ puede desplegar." \
+  "  allow shell git/npm/npx/docker               → SÍ puede operar en local." \
   "  allow fs_read                                → SÍ puede leer el proyecto." \
-  "Como deny gana sobre allow, aunque 'aws *' esté permitido, un 'rm -rf' que" \
-  "alguien intente colar seguirá BLOQUEADO."
+  "Como deny gana sobre allow, aunque 'docker *' esté permitido, un 'rm -rf'" \
+  "que alguien intente colar seguirá BLOQUEADO."
 
 explain "policies: presets de permisos reutilizables" \
   "'read-only-shell' es un preset: un conjunto con nombre de reglas de solo" \
@@ -190,8 +193,8 @@ warn "Regla de oro: MÍNIMO privilegio. Deniega lo peligroso, permite lo" \
      "    cotidiano, y deja que el resto pregunte."
 
 title "Acto 8 completado ✅"
-explain "Ahora el equipo es poderoso Y acotado: deploy-ops solo puede desplegar," \
-  "no destruir. Con piezas y seguridad listas, podemos EMPAQUETAR todo para" \
-  "reusarlo o compartirlo: los Powers." \
+explain "Ahora el equipo es poderoso Y acotado: deploy-ops solo opera en local," \
+  "no destruye ni lee secretos. Con piezas y seguridad listas, podemos" \
+  "EMPAQUETAR todo para reusarlo o compartirlo: los Powers." \
   "" \
   "➡  Siguiente: ./scripts/09-powers.sh (empaquetar y compartir el equipo)"

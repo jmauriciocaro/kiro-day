@@ -2,7 +2,7 @@
 # =============================================================================
 # ACTO 6 — "Automatización del equipo" (Hooks)
 # =============================================================================
-# Historia: el equipo ya construye el POS. Pero queremos que ciertas cosas
+# Historia: el equipo ya construye reporth. Pero queremos que ciertas cosas
 # pasen SOLAS, sin pedirlas: que se corran los tests cada vez que un dev escribe
 # código, y que se BLOQUEEN operaciones peligrosas antes de que ocurran. Eso es
 # contratar a nuestro "QA automático" y a nuestro "guardia de seguridad".

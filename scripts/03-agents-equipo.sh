@@ -2,7 +2,7 @@
 # =============================================================================
 # ACTO 3 — "El equipo crece" (más Custom Agents)
 # =============================================================================
-# Historia: el arquitecto (Acto 2) ya nos propuso CÓMO construir el POS. Ahora
+# Historia: el arquitecto (Acto 2) ya nos propuso CÓMO construir reporth. Ahora
 # necesitamos manos que lo implementen. Contratamos 3 especialistas más, y lo
 # importante: cada uno con PERMISOS DISTINTOS según su rol.
 #
@@ -18,8 +18,8 @@ title "ACTO 3 — El equipo crece: backend, frontend y reviewer"
 
 story "Dónde vamos" \
   "El arquitecto diseñó la solución, pero no construye. Sumamos al equipo:" \
-  "  • backend-dev  → implementa la API (FastAPI) y la lógica de ventas." \
-  "  • frontend-dev → construye la UI del cajero (React)." \
+  "  • backend-dev  → implementa la API (FastAPI): reportes, consultas, cobro." \
+  "  • frontend-dev → construye la UI de la organización (React)." \
   "  • reviewer     → revisa el código, SIN poder modificarlo."
 
 explain "La idea clave de este acto: permisos por rol" \
@@ -37,7 +37,7 @@ explain "El campo 'resources' y cómo exponer skills (bien hecho)" \
   "  knowledgeBase → búsqueda sobre documentación indexada." \
   "Para SKILLS usa skill:// — nunca file://, o perderías la carga progresiva." \
   "El steering 'always' ya se inyecta solo: no hace falta declararlo aquí." \
-  "A los devs les damos acceso a las skills (DynamoDB, Amplify) con skill://."
+  "A los devs les damos acceso a las skills (modelo de datos, correo) con skill://."
 
 pause
 
@@ -46,7 +46,7 @@ mkdirp "$AGENTS"
 
 # --- backend-dev -------------------------------------------------------------
 explain "Especialista 1/3 — backend-dev (puede escribir y ejecutar)" \
-  "Implementa la API del POS. Necesita el set completo: leer, escribir," \
+  "Implementa la API de reporth. Necesita el set completo: leer, escribir," \
   "ejecutar comandos (tests, servidor) y buscar en el código."
 
 BE="$AGENTS/backend-dev.json"
@@ -55,8 +55,8 @@ step "Creando ${BE}…"
 cat > "$BE" <<'JSON'
 {
   "name": "backend-dev",
-  "description": "Desarrolla la API del POS con FastAPI y la lógica de ventas/inventario.",
-  "prompt": "Eres una desarrolladora backend senior en Python. Implementas la API del POS con FastAPI siguiendo el stack y las convenciones del steering del proyecto. Escribes código claro, con tipos, y tests para la lógica de negocio (ventas, descuento de stock). Explicas en español lo que haces, pero el código y los comentarios van en inglés. Antes de cambios grandes, describe tu plan.",
+  "description": "Desarrolla la API de reporth con FastAPI: reportes de deuda, consultas, baja de reportes y cobro por correo.",
+  "prompt": "Eres una desarrolladora backend senior en Python. Implementas la API de reporth con FastAPI siguiendo el stack y las convenciones del steering del proyecto (todo local/emulable, sin nube). Escribes código claro, con tipos, y tests para la lógica de negocio (reportar deuda, consultar, quitar reporte, cobro por correo). Cuidas la PRIVACIDAD: cada organización solo accede a los datos que aportó, y ese aislamiento se valida en el backend. No expones datos sensibles en logs ni en respuestas que no correspondan. Explicas en español lo que haces, pero el código y los comentarios van en inglés. Antes de cambios grandes, describe tu plan.",
   "tools": ["fs_read", "fs_write", "execute_bash", "grep", "glob", "code"],
   "allowedTools": ["fs_read", "grep", "glob", "code"],
   "resources": [
@@ -69,9 +69,9 @@ show_file "$BE"
 pause
 
 # --- frontend-dev ------------------------------------------------------------
-explain "Especialista 2/3 — frontend-dev (UI para cajeros)" \
-  "Construye la interfaz del cajero en React. Tiene acceso a las skills con" \
-  "skill:// (p. ej. deploy-amplify para publicar). El steering de frontend" \
+explain "Especialista 2/3 — frontend-dev (UI para la organización)" \
+  "Construye la interfaz de la organización en React. Tiene acceso a las skills" \
+  "con skill:// (p. ej. la de correo). El steering de frontend" \
   "(fileMatch) se activa solo al editar .tsx/.jsx, sin declararlo aquí."
 
 FE="$AGENTS/frontend-dev.json"
@@ -80,8 +80,8 @@ step "Creando ${FE}…"
 cat > "$FE" <<'JSON'
 {
   "name": "frontend-dev",
-  "description": "Construye la UI del POS en React: catálogo, carrito de venta y cobro.",
-  "prompt": "Eres un desarrollador frontend senior en React + TypeScript. Construyes una interfaz de punto de venta pensada para cajeros SIN formación técnica: botones grandes, textos claros en español, y confirmaciones antes de acciones irreversibles (como anular una venta). Sigues el stack y las convenciones del steering. Explicas en español; el código va en inglés.",
+  "description": "Construye la UI de reporth en React: reportar deuda, consultar una persona y gestionar reportes.",
+  "prompt": "Eres un desarrollador frontend senior en React + TypeScript. Construyes la interfaz de reporth para personal administrativo de una organización (p. ej. secretaría de un jardín): textos claros en español, flujos simples y confirmaciones antes de acciones irreversibles (como quitar un reporte). Respetas la privacidad en la UI: nunca muestras datos de otras organizaciones y, en la consulta, solo el veredicto y el mínimo necesario para aceptar/denegar. Sigues el stack y las convenciones del steering. Explicas en español; el código va en inglés.",
   "tools": ["fs_read", "fs_write", "execute_bash", "grep", "glob", "code"],
   "allowedTools": ["fs_read", "grep", "glob", "code"],
   "resources": [
@@ -146,7 +146,7 @@ explain "Cómo trabajar con el equipo" \
 
 title "Acto 3 completado ✅"
 explain "Tenemos un equipo completo. Pero a veces un dev necesita conocimiento" \
-  "experto puntual (p. ej. cómo modelar ventas en DynamoDB) sin cargarlo" \
-  "siempre. Para eso están las Skills." \
+  "experto puntual (p. ej. cómo modelar los datos de reporth, o cómo enviar el" \
+  "cobro por correo) sin cargarlo siempre. Para eso están las Skills." \
   "" \
   "➡  Siguiente: ./scripts/04-orquestador.sh (el orquestador: sub-agents)"

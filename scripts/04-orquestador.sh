@@ -24,8 +24,8 @@ title "ACTO 4 — El orquestador: coordinar el equipo con sub-agents"
 
 story "Dónde vamos" \
   "Tenemos el equipo, pero lo usábamos de a uno. Ahora creamos un 'tech lead'" \
-  "que REPARTE el trabajo: manda al backend-dev y al frontend-dev a construir" \
-  "EN PARALELO, y al reviewer a auditar. Un agente que delega en otros."
+  "que REPARTE el trabajo de reporth: manda al backend-dev y al frontend-dev a" \
+  "construir EN PARALELO, y al reviewer a auditar. Un agente que delega en otros."
 
 explain "¿Qué es un sub-agent?" \
   "Un agente que se invoca desde OTRO agente para una tarea enfocada. El" \
@@ -65,8 +65,8 @@ step "Creando ${TL}…"
 cat > "$TL" <<'JSON'
 {
   "name": "tech-lead",
-  "description": "Líder técnico del POS: planifica y REPARTE el trabajo entre los especialistas (arquitecto, backend-dev, frontend-dev, reviewer), en paralelo, y consolida los resultados.",
-  "prompt": "Eres el líder técnico del proyecto POS. No implementas tú: tu trabajo es ENTENDER la tarea, dividirla en subtareas y DELEGARLA en los agentes especialistas usando sub-agents. Corre en paralelo lo que sea independiente (p. ej. backend y frontend a la vez) y espera dependencias cuando las haya. Cuando los especialistas terminen, consolidas y resumes en español. Elige al agente por su rol: arquitecto (diseño), backend-dev (API/FastAPI), frontend-dev (React), reviewer (auditoría de solo lectura).",
+  "description": "Líder técnico de reporth: planifica y REPARTE el trabajo entre los especialistas (arquitecto, backend-dev, frontend-dev, reviewer), en paralelo, y consolida los resultados.",
+  "prompt": "Eres el líder técnico del proyecto reporth (central de reporte de deudas B2B). No implementas tú: tu trabajo es ENTENDER la tarea, dividirla en subtareas y DELEGARLA en los agentes especialistas usando sub-agents. Corre en paralelo lo que sea independiente (p. ej. backend y frontend a la vez) y espera dependencias cuando las haya. Cuando los especialistas terminen, consolidas y resumes en español. Elige al agente por su rol: arquitecto (diseño), backend-dev (API/FastAPI), frontend-dev (React), reviewer (auditoría de solo lectura).",
   "tools": ["fs_read", "grep", "glob", "subagent", "@drawio"],
   "allowedTools": ["fs_read", "grep", "glob"],
   "toolsSettings": {
@@ -105,9 +105,9 @@ explain "Patrones de orquestación que soporta" \
 explain "Cómo probarlo en el chat" \
   "  kiro-cli --v3 chat --agent tech-lead" \
   "Pídele algo que reparta trabajo, por ejemplo:" \
-  "  'Diseña y arma el MVP del POS: que el arquitecto proponga la arquitectura," \
-  "   luego backend-dev y frontend-dev implementen EN PARALELO, y el reviewer" \
-  "   audite el resultado.'" \
+  "  'Diseña y arma el MVP de reporth: que el arquitecto proponga la" \
+  "   arquitectura, luego backend-dev y frontend-dev implementen EN PARALELO" \
+  "   (reportar deuda + consultar), y el reviewer audite el resultado.'" \
   "En CLI puedes vigilar sub-agentes largos con Ctrl+G." \
   "" \
   "Kiro también trae sub-agentes internos (context gathering y general purpose)" \

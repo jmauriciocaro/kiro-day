@@ -2,8 +2,9 @@
 # =============================================================================
 # ACTO 0 — "Llegó la idea"
 # =============================================================================
-# Historia: tenemos una idea de negocio (un sistema POS para una tienda) pero
-# NO sabemos de desarrollo ni de cloud. En vez de contratar un equipo humano,
+# Historia: tenemos una idea de negocio (reporth, una central de reporte de
+# deudas B2B entre prestadores de servicios) pero NO sabemos de desarrollo ni
+# de cloud. En vez de contratar un equipo humano,
 # vamos a armar un EQUIPO DE ESPECIALISTAS con Kiro. Pero antes de contratar a
 # nadie, necesitamos montar "la oficina": la estructura .kiro/ donde vivirán las
 # reglas, los agentes, el conocimiento y la automatización del equipo.
@@ -17,10 +18,11 @@ source "$(dirname "$0")/lib/common.sh"
 title "ACTO 0 — Llegó la idea: montamos la oficina (.kiro/)"
 
 story "El escenario" \
-  "Queremos construir un POS (punto de venta) para una tienda." \
-  "No sabemos de arquitectura cloud ni de código." \
+  "Queremos construir reporth: una central de reporte de deudas B2B entre" \
+  "prestadores de servicios (p. ej. jardines infantiles privados)." \
+  "No sabemos de arquitectura ni de código." \
   "La estrategia: usar Kiro para crear un equipo de agentes especialistas" \
-  "que nos acompañen de la idea hasta el despliegue."
+  "que nos acompañen de la idea hasta tener la demo funcionando."
 
 explain "¿Qué es Kiro CLI?" \
   "Un asistente de desarrollo agéntico que vive en tu terminal." \
@@ -72,7 +74,7 @@ step "Creando .kiro/README.md (mapa de la oficina)…"
 cat > "$README_KIRO" <<'MD'
 # .kiro/ — la oficina de nuestro equipo de agentes
 
-Esta carpeta configura cómo Kiro trabaja en este proyecto (POS).
+Esta carpeta configura cómo Kiro trabaja en este proyecto (reporth).
 
 | Carpeta      | Rol en el equipo                          | Feature de Kiro |
 |--------------|-------------------------------------------|-----------------|
@@ -102,6 +104,7 @@ show_file "$MCP_FILE"
 title "Acto 0 completado ✅"
 explain "La oficina está lista. Pero una oficina vacía no construye nada." \
   "Antes de contratar especialistas, hay que definir CÓMO trabaja el equipo:" \
-  "el stack, las convenciones, el idioma. Eso es lo próximo." \
+  "el stack (todo local), las convenciones, el idioma y las reglas de" \
+  "privacidad de datos. Eso es lo próximo." \
   "" \
   "➡  Siguiente: ${BOLD}./scripts/01-steering.sh${RESET} (las reglas de la casa)"
