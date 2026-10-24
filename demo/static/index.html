@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>reporth — central de deudas B2B</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8;
+            --accent:#38bdf8; --ok:#22c55e; --bad:#ef4444; --line:#334155; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, sans-serif;
+           background: var(--bg); color: var(--ink); }
+    header { padding: 20px 24px; border-bottom:1px solid var(--line);
+             display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    header h1 { font-size: 20px; margin:0; }
+    header .tag { color: var(--muted); font-size: 13px; }
+    .me { margin-left:auto; font-size:13px; color:var(--muted); }
+    main { max-width: 980px; margin: 0 auto; padding: 24px;
+           display:grid; gap:20px; grid-template-columns: 1fr 1fr; }
+    .card { background: var(--card); border:1px solid var(--line);
+            border-radius: 12px; padding: 18px; }
+    .card.full { grid-column: 1 / -1; }
+    h2 { font-size: 15px; margin:0 0 14px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+    input, button { font-size:14px; }
+    input { width:100%; padding:9px 11px; border-radius:8px;
+            border:1px solid var(--line); background:#0b1220; color:var(--ink); }
+    button { cursor:pointer; padding:10px 14px; border-radius:8px; border:none;
+             background: var(--accent); color:#06283d; font-weight:600; margin-top:12px; }
+    button.ghost { background:transparent; color:var(--accent);
+                   border:1px solid var(--accent); }
+    button.danger { background:transparent; color:var(--bad);
+                    border:1px solid var(--bad); margin:0; padding:5px 9px; font-size:12px; }
+    .row { display:flex; gap:10px; }
+    .row > div { flex:1; }
+    table { width:100%; border-collapse: collapse; font-size:13px; }
+    th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); }
+    th { color:var(--muted); font-weight:500; }
+    .verdict { padding:14px; border-radius:10px; margin-top:12px; font-weight:600; }
+    .verdict.aceptar { background: rgba(34,197,94,.12); color: var(--ok);
+                       border:1px solid var(--ok); }
+    .verdict.denegar { background: rgba(239,68,68,.12); color: var(--bad);
+                       border:1px solid var(--bad); }
+    .note { font-size:12px; color:var(--muted); margin-top:8px; }
+    .msg { font-size:13px; margin-top:10px; min-height:18px; }
+    .msg.err { color: var(--bad); }
+    .msg.ok { color: var(--ok); }
+    @media (max-width: 760px){ main { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>reporth</h1>
+    <span class="tag">central de reporte de deudas B2B · demo local</span>
+    <span class="me" id="me">sin sesion</span>
+  </header>
+
+  <main>
+    <section class="card full">
+      <h2>Sesion de la organizacion</h2>
+      <div class="row">
+        <div>
+          <label for="apikey">API key de tu organizacion</label>
+          <input id="apikey" placeholder="org-pitufos-key" value="org-pitufos-key" />
+        </div>
+        <div style="flex:0 0 auto; display:flex; align-items:flex-end;">
+          <button id="btn-login">Entrar</button>
+        </div>
+      </div>
+      <p class="note">Prueba: <code>org-pitufos-key</code> (Jardin Los Pitufos) o
+        <code>org-saber-key</code> (Academia El Saber). Cada una solo ve sus datos.</p>
+      <div class="msg" id="login-msg"></div>
+    </section>
+
+    <section class="card">
+      <h2>Reportar una deuda</h2>
+      <div class="row">
+        <div><label>Nombre del estudiante</label><input id="student_name" /></div>
+        <div><label>Registro civil</label><input id="student_rc" /></div>
+      </div>
+      <div class="row">
+        <div><label>Nombre del padre/acudiente</label><input id="parent_name" /></div>
+        <div><label>Cedula</label><input id="parent_cedula" /></div>
+      </div>
+      <label>Correo del acudiente</label><input id="parent_email" />
+      <div class="row">
+        <div><label>Concepto</label><input id="concept" placeholder="Pension abril" /></div>
+        <div><label>Monto</label><input id="amount" type="number" placeholder="350000" /></div>
+      </div>
+      <button id="btn-report">Reportar deuda</button>
+      <div class="msg" id="report-msg"></div>
+    </section>
+
+    <section class="card">
+      <h2>Consultar una persona (aceptar / denegar)</h2>
+      <label>Cedula del acudiente</label><input id="q_cedula" placeholder="52000111" />
+      <label>o Registro civil del estudiante</label><input id="q_rc" placeholder="RC-10001" />
+      <button id="btn-query">Consultar</button>
+      <div id="verdict-box"></div>
+      <p class="note">Solo se muestra un veredicto agregado. No ves los reportes
+        de otras organizaciones.</p>
+    </section>
+
+    <section class="card full">
+      <h2>Mis reportes
+        <button class="ghost" id="btn-charge" style="float:right; margin:0;">Enviar cobro por correo</button>
+      </h2>
+      <div class="msg" id="charge-msg"></div>
+      <table>
+        <thead><tr>
+          <th>Estudiante</th><th>Acudiente</th><th>Concepto</th>
+          <th>Monto</th><th>Estado</th><th></th>
+        </tr></thead>
+        <tbody id="debts-body">
+          <tr><td colspan="6" class="note">Entra con una API key para ver tus reportes.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let apiKey = null;
+
+    function headers() {
+      return { "Content-Type": "application/json", "X-API-Key": apiKey };
+    }
+    function setMsg(el, text, ok) {
+      el.textContent = text; el.className = "msg " + (ok ? "ok" : "err");
+    }
+
+    async function login() {
+      apiKey = $("apikey").value.trim();
+      try {
+        const r = await fetch("/api/me", { headers: headers() });
+        if (!r.ok) throw new Error((await r.json()).detail || "No autorizado");
+        const me = await r.json();
+        $("me").textContent = me.org_name;
+        setMsg($("login-msg"), "Sesion iniciada: " + me.org_name, true);
+        await loadDebts();
+      } catch (e) {
+        apiKey = null; $("me").textContent = "sin sesion";
+        setMsg($("login-msg"), e.message, false);
+      }
+    }
+
+    async function loadDebts() {
+      if (!apiKey) return;
+      const r = await fetch("/api/debts", { headers: headers() });
+      const body = $("debts-body");
+      if (!r.ok) { body.innerHTML = '<tr><td colspan="6" class="note">Error cargando.</td></tr>'; return; }
+      const debts = await r.json();
+      if (debts.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" class="note">Sin reportes todavia.</td></tr>';
+        return;
+      }
+      body.innerHTML = debts.map(d => `
+        <tr>
+          <td>${d.student_name}<br><span class="note">${d.student_rc}</span></td>
+          <td>${d.parent_name}<br><span class="note">${d.parent_cedula}</span></td>
+          <td>${d.concept}</td>
+          <td>$${Number(d.amount).toLocaleString()}</td>
+          <td>${d.status}</td>
+          <td><button class="danger" data-id="${d.id}">Quitar</button></td>
+        </tr>`).join("");
+      body.querySelectorAll("button.danger").forEach(b =>
+        b.addEventListener("click", () => removeDebt(b.dataset.id)));
+    }
+
+    async function reportDebt() {
+      if (!apiKey) return setMsg($("report-msg"), "Primero entra con tu API key.", false);
+      const payload = {
+        student_name: $("student_name").value.trim(),
+        student_rc: $("student_rc").value.trim(),
+        parent_name: $("parent_name").value.trim(),
+        parent_cedula: $("parent_cedula").value.trim(),
+        parent_email: $("parent_email").value.trim(),
+        concept: $("concept").value.trim(),
+        amount: Number($("amount").value),
+      };
+      const r = await fetch("/api/debts", { method: "POST", headers: headers(), body: JSON.stringify(payload) });
+      if (r.ok) {
+        setMsg($("report-msg"), "Deuda reportada.", true);
+        ["student_name","student_rc","parent_name","parent_cedula","parent_email","concept","amount"].forEach(i => $(i).value = "");
+        await loadDebts();
+      } else {
+        setMsg($("report-msg"), "Error: revisa los campos (todos obligatorios, monto > 0).", false);
+      }
+    }
+
+    async function removeDebt(id) {
+      if (!confirm("Quitar este reporte? Esta accion no se puede deshacer.")) return;
+      const r = await fetch("/api/debts/" + id, { method: "DELETE", headers: headers() });
+      if (r.status === 204) await loadDebts();
+    }
+
+    async function query() {
+      if (!apiKey) return;
+      const params = new URLSearchParams();
+      if ($("q_cedula").value.trim()) params.set("cedula", $("q_cedula").value.trim());
+      if ($("q_rc").value.trim()) params.set("registro_civil", $("q_rc").value.trim());
+      const box = $("verdict-box");
+      if (![...params].length) { box.innerHTML = '<div class="msg err">Indica cedula o registro civil.</div>'; return; }
+      const r = await fetch("/api/query?" + params.toString(), { headers: headers() });
+      if (!r.ok) { box.innerHTML = '<div class="msg err">Error en la consulta.</div>'; return; }
+      const v = await r.json();
+      box.innerHTML = `<div class="verdict ${v.verdict}">
+        ${v.verdict === "aceptar" ? "✓ ACEPTAR" : "✕ DENEGAR"}
+        — ${v.has_debts ? v.reports_count + " reporte(s), total $" + Number(v.total_amount).toLocaleString() : "sin deudas reportadas"}
+      </div>`;
+    }
+
+    async function charge() {
+      if (!apiKey) return;
+      setMsg($("charge-msg"), "Enviando cobros...", true);
+      const r = await fetch("/api/charge", { method: "POST", headers: headers() });
+      if (!r.ok) return setMsg($("charge-msg"), "Error enviando cobros.", false);
+      const res = await r.json();
+      setMsg($("charge-msg"),
+        `Cobros procesados: ${res.charged} · entregados: ${res.delivered} · fallidos: ${res.failed}`, true);
+      await loadDebts();
+    }
+
+    $("btn-login").addEventListener("click", login);
+    $("btn-report").addEventListener("click", reportDebt);
+    $("btn-query").addEventListener("click", query);
+    $("btn-charge").addEventListener("click", charge);
+    login(); // auto-login with the prefilled demo key
+  </script>
+</body>
+</html>
